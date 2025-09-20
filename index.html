@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧭 Velocímetros</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #fff;
+    color: #222;
+    margin: 0;
+    padding: 20px 20px 10px 20px; /* reduz o padding inferior para aproximar o footer */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden; /* <- adiciona esta linha */
+}
+
+
+
+  h2 { margin-top: 0; }
+
+  .gauges {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .gauge-container {
+    position: relative;
+    width: 260px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  svg { width: 100%; height: auto; }
+
+  .label { font-weight: bold; margin-top: 8px; font-size: 18px; }
+  .value { margin-top: 4px; font-size: 16px; color: #333; min-height: 20px; }
+
+  #controls { margin-top: 20px; }
+  input, select, button { margin: 6px; padding: 6px 12px; font-size: 15px; }
+
+footer {
+    margin-top: 10px; /* distancia menor do conteúdo acima */
+    padding: 8px;
+    font-size: 14px;
+    color: #666;
+    animation: fade 2s infinite alternate;
+}
+
+  @keyframes fade { from { opacity: 0.3; } to { opacity: 1; } }
+
+  @media(max-width: 600px){
+    .gauges { flex-direction: column; gap: 30px; }
+    .gauge-container { width: 200px; height: 170px; }
+  }
+</style>
+</head>
+<body>
+
+<h2>🧭 Teste de Velocidade - Velocímetros</h2>
+
+<div class="gauges">
+  <div class="gauge-container">
+    <svg id="gaugeDownload"></svg>
+    <div class="label">Download</div>
+    <div class="value" id="downloadValue">0 Mbps</div>
+  </div>
+  <div class="gauge-container">
+    <svg id="gaugeUpload"></svg>
+    <div class="label">Upload</div>
+    <div class="value" id="uploadValue">0 Mbps</div>
+  </div>
+</div>
+
+<div id="controls">
+  <label>Modelo: </label>
+  <select id="gaugeModel">
+    <option value="1">Modelo 1 - Ponteiro Clássico</option>
+    <option value="2">Modelo 2 - Arco Preenchido</option>
+    <option value="3">Modelo 3 - Semicírculo Colorido</option>
+    <option value="4">Modelo 4 - Barra Horizontal</option>
+    <option value="5">Modelo 5 - Barra Vertical</option>
+    <option value="6">Modelo 6 - Ponteiro Esportivo</option>
+    <option value="7">Modelo 7 - Barra Neon</option>
+    <option value="8">Modelo 8 - Display Digital</option>
+  </select>
+  <button id="startTest">▶️ Iniciar Teste</button>
+</div>
+
+<footer>Desenvolvido por EDCELL-TECH</footer>
+
+<script>
+const cx = 130, cy = 130, r = 100, strokeWidth = 18;
+const downloadValue = document.getElementById('downloadValue');
+const uploadValue = document.getElementById('uploadValue');
+
+function polarToCartesian(cx, cy, r, deg){
+  const rad = (deg - 180) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function drawGauge(svg, percent, model){
+  svg.innerHTML = '';
+  let color = percent >= 80 ? '#2e8b57' : (percent >= 50 ? '#f0ad4e' : '#d9534f');
+
+  switch(model){
+    case 1: // Ponteiro Clássico
+      const start1 = polarToCartesian(cx, cy, r, 0);
+      const end1 = polarToCartesian(cx, cy, r, 180);
+      const base1 = document.createElementNS("http://www.w3.org/2000/svg","path");
+      base1.setAttribute('d', `M ${start1.x} ${start1.y} A ${r} ${r} 0 0 1 ${end1.x} ${end1.y}`);
+      base1.setAttribute('fill','none'); base1.setAttribute('stroke','#eee'); base1.setAttribute('stroke-width', strokeWidth);
+      svg.appendChild(base1);
+
+      const angle1 = (percent/100)*180;
+      const endColor1 = polarToCartesian(cx, cy, r, angle1);
+      const pathColor1 = document.createElementNS("http://www.w3.org/2000/svg","path");
+      pathColor1.setAttribute('d', `M ${start1.x} ${start1.y} A ${r} ${r} 0 ${angle1>180?1:0} 1 ${endColor1.x} ${endColor1.y}`);
+      pathColor1.setAttribute('fill','none'); pathColor1.setAttribute('stroke', color);
+      pathColor1.setAttribute('stroke-width', strokeWidth); pathColor1.setAttribute('stroke-linecap','round');
+      svg.appendChild(pathColor1);
+
+      const needleEnd1 = polarToCartesian(cx, cy, r-25, angle1);
+      const needle1 = document.createElementNS("http://www.w3.org/2000/svg","line");
+      needle1.setAttribute('x1', cx); needle1.setAttribute('y1', cy);
+      needle1.setAttribute('x2', needleEnd1.x); needle1.setAttribute('y2', needleEnd1.y);
+      needle1.setAttribute('stroke','#333'); needle1.setAttribute('stroke-width','3');
+      svg.appendChild(needle1);
+
+      const circle1 = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      circle1.setAttribute('cx', cx); circle1.setAttribute('cy', cy); circle1.setAttribute('r', 5); circle1.setAttribute('fill', '#333');
+      svg.appendChild(circle1);
+      break;
+
+    case 2: // Arco Preenchido
+      const arcBg2 = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      arcBg2.setAttribute('cx', cx); arcBg2.setAttribute('cy', cy); arcBg2.setAttribute('r', r);
+      arcBg2.setAttribute('fill','none'); arcBg2.setAttribute('stroke','#eee'); arcBg2.setAttribute('stroke-width', strokeWidth);
+      svg.appendChild(arcBg2);
+
+      const arcFill2 = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      arcFill2.setAttribute('cx', cx); arcFill2.setAttribute('cy', cy); arcFill2.setAttribute('r', r);
+      arcFill2.setAttribute('fill','none'); arcFill2.setAttribute('stroke', color); arcFill2.setAttribute('stroke-width', strokeWidth);
+      arcFill2.setAttribute('stroke-dasharray', `${(percent/100)*2*Math.PI*r} ${9999}`);
+      arcFill2.setAttribute('transform',`rotate(-90,${cx},${cy})`);
+      svg.appendChild(arcFill2);
+      break;
+
+    case 3: // Semicírculo Colorido
+      const start3 = polarToCartesian(cx, cy, r, 0);
+      const end3 = polarToCartesian(cx, cy, r, 180);
+      const semiBg3 = document.createElementNS("http://www.w3.org/2000/svg","path");
+      semiBg3.setAttribute('d', `M ${start3.x} ${start3.y} A ${r} ${r} 0 0 1 ${end3.x} ${end3.y}`);
+      semiBg3.setAttribute('fill','none'); semiBg3.setAttribute('stroke','#eee'); semiBg3.setAttribute('stroke-width', strokeWidth);
+      svg.appendChild(semiBg3);
+
+      const angle3 = (percent/100)*180;
+      const endSemi3 = polarToCartesian(cx, cy, r, angle3);
+      const semiFill3 = document.createElementNS("http://www.w3.org/2000/svg","path");
+      semiFill3.setAttribute('d', `M ${start3.x} ${start3.y} A ${r} ${r} 0 0 1 ${endSemi3.x} ${endSemi3.y}`);
+      semiFill3.setAttribute('fill','none'); semiFill3.setAttribute('stroke', color); semiFill3.setAttribute('stroke-width', strokeWidth);
+      semiFill3.setAttribute('stroke-linecap','round');
+      svg.appendChild(semiFill3);
+      break;
+
+    case 4: // Barra Horizontal
+      const barHbg4 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      barHbg4.setAttribute('x', 30); barHbg4.setAttribute('y', 80); barHbg4.setAttribute('width', 200); barHbg4.setAttribute('height', 30); barHbg4.setAttribute('fill','#eee');
+      svg.appendChild(barHbg4);
+
+      const barH4 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      barH4.setAttribute('x', 30); barH4.setAttribute('y', 80); barH4.setAttribute('width', 2*percent); barH4.setAttribute('height', 30); barH4.setAttribute('fill', color);
+      svg.appendChild(barH4);
+      break;
+
+    case 5: // Barra Vertical
+      const barVbg5 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      barVbg5.setAttribute('x', 110); barVbg5.setAttribute('y', 20); barVbg5.setAttribute('width', 40); barVbg5.setAttribute('height', 120); barVbg5.setAttribute('fill','#eee');
+      svg.appendChild(barVbg5);
+
+      const barV5 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      barV5.setAttribute('x', 110); barV5.setAttribute('y', 140-(percent*1.2)); barV5.setAttribute('width', 40); barV5.setAttribute('height', percent*1.2); barV5.setAttribute('fill', color);
+      svg.appendChild(barV5);
+      break;
+
+    case 6: // Ponteiro Esportivo
+      const dial6 = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      dial6.setAttribute('cx', cx); dial6.setAttribute('cy', cy); dial6.setAttribute('r', r); dial6.setAttribute('fill','none'); dial6.setAttribute('stroke','#ddd'); dial6.setAttribute('stroke-width','2');
+      svg.appendChild(dial6);
+
+      const needleEnd6 = polarToCartesian(cx, cy, r-15, (percent/100)*180);
+      const needle6 = document.createElementNS("http://www.w3.org/2000/svg","line");
+      needle6.setAttribute('x1', cx); needle6.setAttribute('y1', cy); needle6.setAttribute('x2', needleEnd6.x); needle6.setAttribute('y2', needleEnd6.y);
+      needle6.setAttribute('stroke', color); needle6.setAttribute('stroke-width','6'); needle6.setAttribute('stroke-linecap','round');
+      svg.appendChild(needle6);
+      break;
+
+    case 7: // Barra Neon
+      const barNeonBg7 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      barNeonBg7.setAttribute('x', 30); barNeonBg7.setAttribute('y', 80); barNeonBg7.setAttribute('width', 200); barNeonBg7.setAttribute('height', 30); barNeonBg7.setAttribute('fill','#eee');
+      svg.appendChild(barNeonBg7);
+
+      const barNeon7 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      barNeon7.setAttribute('x', 30); barNeon7.setAttribute('y', 80); barNeon7.setAttribute('width', 2*percent); barNeon7.setAttribute('height', 30); barNeon7.setAttribute('fill', color); barNeon7.setAttribute('filter','url(#glow)');
+      svg.appendChild(barNeon7);
+
+      const defs7 = document.createElementNS("http://www.w3.org/2000/svg","defs");
+      defs7.innerHTML = `<filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+      svg.appendChild(defs7);
+      break;
+
+    case 8: // Display Digital
+      const rect8 = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      rect8.setAttribute('x', 40); rect8.setAttribute('y', 70); rect8.setAttribute('width', 180); rect8.setAttribute('height', 60); rect8.setAttribute('fill','#111'); rect8.setAttribute('rx',8);
+      svg.appendChild(rect8);
+
+      const txt8 = document.createElementNS("http://www.w3.org/2000/svg","text");
+      txt8.setAttribute('x', 130); txt8.setAttribute('y', 110); txt8.setAttribute('fill','#0f0'); txt8.setAttribute('font-size','28'); txt8.setAttribute('text-anchor','middle'); txt8.setAttribute('font-family','monospace');
+      txt8.textContent = Math.round(percent) + "%";
+      svg.appendChild(txt8);
+      break;
+  }
+}
+
+// Simulação aleatória
+function simulateGauge(svg, valueElement, model, duration=10000){
+  return new Promise(resolve=>{
+    let elapsed = 0;
+    const interval = setInterval(()=>{
+      elapsed += 200;
+      let val = (Math.random()*70 + 10); // 10 a 80 Mbps
+      val = Math.round(val*100)/100;
+      drawGauge(svg, val, model);
+      valueElement.textContent = val + ' Mbps';
+      if(elapsed >= duration){
+        clearInterval(interval);
+        resolve(val);
+      }
+    },200);
+  });
+}
+
+document.getElementById('startTest').addEventListener('click', async ()=>{
+  const model = parseInt(document.getElementById('gaugeModel').value);
+  drawGauge(document.getElementById('gaugeDownload'), 0, model);
+  drawGauge(document.getElementById('gaugeUpload'), 0, model);
+  downloadValue.textContent = '0 Mbps';
+  uploadValue.textContent = '0 Mbps';
+
+  await simulateGauge(document.getElementById('gaugeDownload'), downloadValue, model, 10000);
+  await simulateGauge(document.getElementById('gaugeUpload'), uploadValue, model, 10000);
+});
+
+// Inicialização
+drawGauge(document.getElementById('gaugeDownload'),0,1);
+drawGauge(document.getElementById('gaugeUpload'),0,1);
+</script>
+
+</body>
+</html>
