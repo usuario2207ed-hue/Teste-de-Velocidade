@@ -15,37 +15,35 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    overflow: hidden; /* <- adiciona esta linha */
+    overflow: hidden; /* mantém conteúdo dentro da tela */
 }
 
+h2 { margin-top: 0; }
 
-
-  h2 { margin-top: 0; }
-
-  .gauges {
+.gauges {
     display: flex;
     justify-content: center;
     gap: 50px;
     margin: 20px 0;
     flex-wrap: wrap;
-  }
+}
 
-  .gauge-container {
+.gauge-container {
     position: relative;
     width: 260px;
     height: 200px;
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
+}
 
-  svg { width: 100%; height: auto; }
+svg { width: 100%; height: auto; }
 
-  .label { font-weight: bold; margin-top: 8px; font-size: 18px; }
-  .value { margin-top: 4px; font-size: 16px; color: #333; min-height: 20px; }
+.label { font-weight: bold; margin-top: 8px; font-size: 18px; }
+.value { margin-top: 4px; font-size: 16px; color: #333; min-height: 20px; }
 
-  #controls { margin-top: 20px; }
-  input, select, button { margin: 6px; padding: 6px 12px; font-size: 15px; }
+#controls { margin-top: 20px; }
+input, select, button { margin: 6px; padding: 6px 12px; font-size: 15px; }
 
 footer {
     margin-top: 10px; /* distancia menor do conteúdo acima */
@@ -55,12 +53,17 @@ footer {
     animation: fade 2s infinite alternate;
 }
 
-  @keyframes fade { from { opacity: 0.3; } to { opacity: 1; } }
+@keyframes fade { from { opacity: 0.3; } to { opacity: 1; } }
 
-  @media(max-width: 600px){
-    .gauges { flex-direction: column; gap: 30px; }
+/* RESPONSIVO: telas menores que 600px */
+@media(max-width: 600px){
+    .gauges {
+        flex-direction: column; /* empilha os velocímetros verticalmente */
+        gap: 30px;
+        align-items: center;
+    }
     .gauge-container { width: 200px; height: 170px; }
-  }
+}
 </style>
 </head>
 <body>
@@ -198,7 +201,8 @@ function drawGauge(svg, percent, model){
 
       const needleEnd6 = polarToCartesian(cx, cy, r-15, (percent/100)*180);
       const needle6 = document.createElementNS("http://www.w3.org/2000/svg","line");
-      needle6.setAttribute('x1', cx); needle6.setAttribute('y1', cy); needle6.setAttribute('x2', needleEnd6.x); needle6.setAttribute('y2', needleEnd6.y);
+      needle6.setAttribute('x1', cx); needle6.setAttribute('y1', cy);
+      needle6.setAttribute('x2', needleEnd6.x); needle6.setAttribute('y2', needleEnd6.y);
       needle6.setAttribute('stroke', color); needle6.setAttribute('stroke-width','6'); needle6.setAttribute('stroke-linecap','round');
       svg.appendChild(needle6);
       break;
@@ -266,3 +270,4 @@ drawGauge(document.getElementById('gaugeUpload'),0,1);
 
 </body>
 </html>
+
